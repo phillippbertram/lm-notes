@@ -37,3 +37,13 @@ export async function getSources(notebookId: string) {
     return { error: "Failed to fetch sources" };
   }
 }
+
+export async function deleteSource(id: string) {
+  try {
+    await db.delete(sources).where(eq(sources.id, id));
+    return { success: true };
+  } catch (error) {
+    console.error("Error deleting source:", error);
+    return { error: "Failed to delete source" };
+  }
+}

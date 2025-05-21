@@ -1,6 +1,6 @@
 "use client";
 
-import { FileTextIcon, PanelLeft } from "lucide-react";
+import { FileTextIcon, PanelLeft, MoreVertical, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   ResizablePanelGroup,
@@ -11,7 +11,23 @@ import { useState, useRef, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { Notebook, Source } from "@/lib/db/types";
 import { AddSourceDialog } from "@/components/add-source-dialog";
-import { createSource, getSources } from "@/lib/actions/sources";
+import { createSource, getSources, deleteSource } from "@/lib/actions/sources";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 
 interface NotebookLayoutProps {
@@ -21,6 +37,7 @@ interface NotebookLayoutProps {
 export function NotebookLayout({ notebook }: NotebookLayoutProps) {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [sources, setSources] = useState<Source[]>([]);
+  const [sourceToDelete, setSourceToDelete] = useState<Source | null>(null);
   const panelRef = useRef<any>(null);
 
   useEffect(() => {
@@ -58,6 +75,20 @@ export function NotebookLayout({ notebook }: NotebookLayoutProps) {
     }
   };
 
+  const handleDeleteSource = async () => {
+    if (!sourceToDelete) return;
+
+    const { error } = await deleteSource(sourceToDelete.id);
+    if (error) {
+      console.error("Failed to delete source:", error);
+      toast.error("Failed to delete source");
+      return;
+    }
+
+    await loadSources();
+    setSourceToDelete(null);
+  };
+
   return (
     <div className="h-[calc(100vh-4rem)]">
       <ResizablePanelGroup direction="horizontal" className="h-full">
@@ -74,7 +105,7 @@ export function NotebookLayout({ notebook }: NotebookLayoutProps) {
           <div className="flex h-full flex-col bg-muted/40">
             <div
               className={cn(
-                "flex items-center justify-between p-4 border-b",
+                "flex items-center justify-between p-3 border-b",
                 isCollapsed && "justify-center"
               )}
             >
@@ -104,7 +135,7 @@ export function NotebookLayout({ notebook }: NotebookLayoutProps) {
                   <div
                     key={source.id}
                     className={cn(
-                      "flex items-center gap-2 rounded-md hover:bg-muted cursor-pointer",
+                      "group flex items-center gap-2 rounded-md hover:bg-muted cursor-pointer",
                       isCollapsed ? "justify-center p-3" : "p-2"
                     )}
                   >
@@ -115,14 +146,36 @@ export function NotebookLayout({ notebook }: NotebookLayoutProps) {
                       )}
                     />
                     {!isCollapsed && (
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium truncate">
-                          {source.title}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          {new Date(source.createdAt).toLocaleDateString()}
-                        </p>
-                      </div>
+                      <>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium truncate">
+                            {source.title}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {new Date(source.createdAt).toLocaleDateString()}
+                          </p>
+                        </div>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 opacity-0 group-hover:opacity-100"
+                            >
+                              <MoreVertical className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem
+                              className="text-destructive"
+                              onClick={() => setSourceToDelete(source)}
+                            >
+                              <Trash2 className="h-4 w-4 mr-2" />
+                              Delete
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </>
                     )}
                   </div>
                 ))}
@@ -182,6 +235,30 @@ export function NotebookLayout({ notebook }: NotebookLayoutProps) {
           </div>
         </ResizablePanel>
       </ResizablePanelGroup>
+
+      <AlertDialog
+        open={!!sourceToDelete}
+        onOpenChange={() => setSourceToDelete(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Source</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this source? This action cannot be
+              undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteSource}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
