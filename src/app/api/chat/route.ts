@@ -3,7 +3,7 @@ import { frontendTools } from "@assistant-ui/react-ai-sdk";
 import { streamText } from "ai";
 
 export const runtime = "edge";
-export const maxDuration = 30;
+export const maxDuration = 30; // seconds
 
 export async function POST(req: Request) {
   const { messages, system, tools } = await req.json();
