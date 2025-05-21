@@ -72,26 +72,26 @@ async def upload_pdf(
     print(f"Loaded {len(documents)} documents")
 
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
-    split_docs = text_splitter.split_documents(documents)
-    for doc in split_docs:
-        # update "source" to just reflect the file name
-        # per default source is something like: /var/folders/hx/sm1_xfpn2tg0j6tdkkry38480000gn/T/tmp78vwjbq8.pdf
-        doc.metadata["source"] = file.filename
+    split_docs = text_splitter.split_documents(documents)    
     
     Path(tmp_path).unlink() # delete the temp file
 
     # add custom metadata to the documents
     for i, doc in enumerate(split_docs):
-        doc.metadata = {
-            "source": doc.metadata.get("source", ""),
+        # update "source" to just reflect the file name
+        # per default source is something like: /var/folders/hx/sm1_xfpn2tg0j6tdkkry38480000gn/T/tmp78vwjbq8.pdf
+        doc.metadata.update({
+            # ############################################################
+            # MUST_HAVE!
+            "source": file.filename,
             "sourceId": sourceId,
             "notebookId": notebookId,
-            "upload_date": datetime.now().isoformat(),
-            "page_count": len(documents),  # Since documents is a list of pages
-            "content_type": file.content_type,
-            "chunk_index": i,
-            "total_chunks": len(split_docs)
-        }
+            # ############################################################
+            "uploadDate": datetime.now().isoformat(),
+        })
+
+        # remove file_path from metadata, because it's only temporary file
+        doc.metadata.pop("file_path", None)
 
     print(f"Uploading to Pinecone: {pinecone_index}")
     
