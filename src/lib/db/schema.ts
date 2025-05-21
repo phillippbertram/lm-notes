@@ -1,11 +1,4 @@
-import {
-  pgTable,
-  serial,
-  text,
-  timestamp,
-  integer,
-  uuid,
-} from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 
 const id = uuid("id").defaultRandom().primaryKey();
 const createdAt = timestamp("created_at").defaultNow().notNull();
