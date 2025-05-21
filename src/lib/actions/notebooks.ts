@@ -3,12 +3,16 @@
 import { db } from "@/lib/db";
 import { notebooks } from "@/lib/db/schema";
 import { desc, eq } from "drizzle-orm";
+import { Notebook, NewNotebook } from "@/lib/db/types";
 import {
   createNotebookSchema,
   updateNotebookSchema,
+  deleteNotebookSchema,
   type CreateNotebookInput,
   type UpdateNotebookInput,
+  type DeleteNotebookInput,
 } from "@/lib/validations/notebook";
+import { z } from "zod";
 
 export async function getNotebooks() {
   try {
@@ -23,46 +27,69 @@ export async function getNotebooks() {
   }
 }
 
-export async function createNotebook({ title }: CreateNotebookInput) {
+export async function getNotebook(id: string) {
   try {
-    const validatedFields = createNotebookSchema.safeParse({ title });
-    if (!validatedFields.success) {
-      return { error: "Invalid fields" };
+    const [notebook] = await db
+      .select()
+      .from(notebooks)
+      .where(eq(notebooks.id, id))
+      .limit(1);
+
+    if (!notebook) {
+      return { error: "Notebook not found" };
     }
+
+    return { data: notebook };
+  } catch (error) {
+    console.error("Error fetching notebook:", error);
+    return { error: "Failed to fetch notebook" };
+  }
+}
+
+export async function createNotebook(input: CreateNotebookInput) {
+  try {
+    const validatedData = createNotebookSchema.parse(input);
     const [notebook] = await db
       .insert(notebooks)
-      .values({ title: validatedFields.data.title })
+      .values(validatedData)
       .returning();
     return { data: notebook };
   } catch (error) {
+    if (error instanceof z.ZodError) {
+      return { error: error.errors[0].message };
+    }
     console.error("Error creating notebook:", error);
     return { error: "Failed to create notebook" };
   }
 }
 
-export async function deleteNotebook({ id }: { id: string }) {
+export async function deleteNotebook(input: DeleteNotebookInput) {
   try {
-    await db.delete(notebooks).where(eq(notebooks.id, id));
+    const validatedData = deleteNotebookSchema.parse(input);
+    await db.delete(notebooks).where(eq(notebooks.id, validatedData.id));
     return { success: true };
   } catch (error) {
+    if (error instanceof z.ZodError) {
+      return { error: error.errors[0].message };
+    }
     console.error("Error deleting notebook:", error);
     return { error: "Failed to delete notebook" };
   }
 }
 
-export async function updateNotebook({ id, title }: UpdateNotebookInput) {
+export async function updateNotebook(input: UpdateNotebookInput) {
   try {
-    const validatedFields = updateNotebookSchema.safeParse({ id, title });
-    if (!validatedFields.success) {
-      return { error: "Invalid fields" };
-    }
+    const validatedData = updateNotebookSchema.parse(input);
     const [notebook] = await db
       .update(notebooks)
-      .set({ title: validatedFields.data.title })
-      .where(eq(notebooks.id, validatedFields.data.id))
+      .set({ title: validatedData.title, updatedAt: new Date() })
+      .where(eq(notebooks.id, validatedData.id))
       .returning();
     return { data: notebook };
   } catch (error) {
+    if (error instanceof z.ZodError) {
+      return { error: error.errors[0].message };
+    }
     console.error("Error updating notebook:", error);
     return { error: "Failed to update notebook" };
   }
