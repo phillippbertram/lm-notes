@@ -12,6 +12,7 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_pinecone import PineconeVectorStore
 from langchain_openai import OpenAIEmbeddings
 from datetime import datetime
+from app.rag_agent import create_rag_agent
 
 load_dotenv()
 
@@ -31,19 +32,31 @@ embeddings = OpenAIEmbeddings()
 
 
 # Dummy streaming generator (for /chat-stream)
-async def dummy_token_stream(message: str):
-    for word in message.split():
-        await asyncio.sleep(0.2)
-        yield word + " "
+# async def dummy_token_stream(message: str):
+#     for word in message.split():
+#         await asyncio.sleep(0.2)
+#         yield word + " "
 
 @app.post("/chat-stream")
 async def chat_stream(request: Request):
     body = await request.json()
     input_text = body.get("message", "")
+    notebookId = body.get("notebookId", "")
+    print(f"input_text: {input_text}")
+    print(f"notebookId: {notebookId}")
+    # async def event_stream():
+    #     async for token in dummy_token_stream(input_text):
+    #         yield f"data: {token}\n\n"
 
+    agent = create_rag_agent(notebookId)
     async def event_stream():
-        async for token in dummy_token_stream(input_text):
-            yield f"data: {token}\n\n"
+        async for event in agent.astream_events(input_text):
+            kind = event["event"]
+            if kind == "on_chat_model_stream":
+                print(event['data']['chunk'].content, end="|", flush=True)
+                # Need to format as SSE data
+                yield f"data: {event['data']['chunk'].content}\n\n"
+
 
     return StreamingResponse(event_stream(), media_type="text/event-stream")
 

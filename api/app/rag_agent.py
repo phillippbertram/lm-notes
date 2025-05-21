@@ -111,15 +111,22 @@ def chat_with_agent(query: str, notebook_id: str, chat_history: List[Dict[str, A
     debug_print(f"Using notebook: {notebook_id}")
     
     # Create retriever and chain
-    retriever = create_retriever(notebook_id)
-    rag_chain = create_rag_chain(retriever)
+    # TODO: chat_history
+    agent = create_rag_agent(notebook_id)
     
     # Execute the chain
     debug_print("Executing RAG chain")
-    result = rag_chain.invoke(query)
+    result = agent.invoke(query)
     debug_print("Chain execution completed")
     
     return result
+
+def create_rag_agent(notebook_id: str):
+    # Create retriever and chain
+    retriever = create_retriever(notebook_id)
+    rag_chain = create_rag_chain(retriever)
+    return rag_chain
+
 
 if __name__ == "__main__":
     # Example usage
