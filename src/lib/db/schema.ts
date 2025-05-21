@@ -7,7 +7,7 @@ import {
   uuid,
 } from "drizzle-orm/pg-core";
 
-const id = uuid("id").primaryKey();
+const id = uuid("id").defaultRandom().primaryKey();
 const createdAt = timestamp("created_at").defaultNow().notNull();
 const updatedAt = timestamp("updated_at").defaultNow().notNull();
 const timestamps = { createdAt, updatedAt };
@@ -25,5 +25,6 @@ export const sources = pgTable("sources", {
     .notNull(),
   title: text("title").notNull(),
   type: text("type").notNull(),
+  content: text("content"),
   ...timestamps,
 });
