@@ -1,5 +1,3 @@
-import { Button } from "@/components/ui/button";
-
 export const EMOJI_SUGGESTIONS = [
   "📝",
   "📚",

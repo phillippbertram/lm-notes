@@ -34,10 +34,10 @@ const MyModelAdapter = (notebookId: string): ChatModelAdapter => {
 
 interface ChatProps {
   notebook: Notebook;
-  sources: Source[];
+  sources: Source[]; // TODO: not used yet
 }
 
-export function Chat({ notebook, sources }: ChatProps) {
+export function Chat({ notebook }: ChatProps) {
   const runtime = useLocalRuntime(MyModelAdapter(notebook.id));
   // const { messages, input, handleInputChange, handleSubmit, isLoading } =
   //   useChat({

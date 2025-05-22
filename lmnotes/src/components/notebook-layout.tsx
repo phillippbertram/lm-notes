@@ -44,10 +44,6 @@ export function NotebookLayout({ notebook }: NotebookLayoutProps) {
   const [sourceToDelete, setSourceToDelete] = useState<Source | null>(null);
   const panelRef = useRef<any>(null);
 
-  useEffect(() => {
-    loadSources();
-  }, [notebook.id]);
-
   const loadSources = async () => {
     const { data, error } = await getSources(notebook.id);
     if (error) {
@@ -56,6 +52,10 @@ export function NotebookLayout({ notebook }: NotebookLayoutProps) {
     }
     setSources(data || []);
   };
+
+  useEffect(() => {
+    loadSources();
+  }, [notebook.id, loadSources]);
 
   const handleAddSource = async (file: File) => {
     try {

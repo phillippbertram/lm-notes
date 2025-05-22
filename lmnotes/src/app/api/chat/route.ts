@@ -1,6 +1,4 @@
 import { NextResponse } from "next/server";
-import { openai } from "@ai-sdk/openai";
-import { streamText } from "ai";
 import { z } from "zod";
 
 // export const runtime = "edge";
