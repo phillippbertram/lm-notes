@@ -14,7 +14,7 @@ export default async function Home() {
   }
 
   return (
-    <div className="container py-6 mx-auto">
+    <div className="container py-6 px-4 mx-auto">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-semibold">Notebooks</h1>
         <NotebookDialog />
@@ -25,7 +25,7 @@ export default async function Home() {
           <p className="text-muted-foreground">No notebooks yet</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 auto-rows-fr">
           {notebooks.map((notebook) => (
             <NotebookCard key={notebook.id} notebook={notebook} />
           ))}
