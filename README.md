@@ -168,6 +168,36 @@ PINECONE_INDEX_NAME=your_pinecone_index_name
    docker-compose logs -f
    ```
 
+### Running Just the Database
+
+If you want to run the application locally but use the Docker database:
+
+1. Start only the database service:
+
+   ```bash
+   docker-compose up db
+   ```
+
+2. The database will be available at:
+
+   - Host: localhost
+   - Port: 5432
+   - User: postgres
+   - Password: postgres
+   - Database: lmnotes
+
+3. Update your local `.env` files to use this database:
+
+   ```env
+   # In web/.env and api/.env
+   DATABASE_URL=postgresql://postgres:postgres@localhost:5432/lmnotes
+   ```
+
+4. To stop the database:
+   ```bash
+   docker-compose down
+   ```
+
 ## Development
 
 ### Database Management
