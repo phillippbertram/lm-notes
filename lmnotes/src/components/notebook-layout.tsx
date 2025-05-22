@@ -188,7 +188,10 @@ export function NotebookLayout({ notebook }: NotebookLayoutProps) {
           <div className="flex h-full flex-col">
             {/* Chat Header */}
             <div className="p-4 border-b">
-              <h1 className="text-xl font-semibold">{notebook.title}</h1>
+              <h1 className="text-xl font-semibold">
+                <span className="mr-2">{notebook.emoji}</span>{" "}
+                <span>{notebook.title}</span>
+              </h1>
             </div>
 
             <Chat notebook={notebook} sources={sources} />

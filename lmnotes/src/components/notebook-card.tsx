@@ -11,18 +11,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import {
-  deleteNotebook,
-  NoteBootWithSourceCount,
-  updateNotebook,
-} from "@/lib/actions/notebooks";
+import { deleteNotebook } from "@/lib/actions/notebooks";
 import { Notebook } from "@/lib/db/types";
 import {
   AlertDialog,
@@ -41,76 +30,22 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { NotebookDialog } from "@/components/notebook-dialog";
 
-const EMOJI_SUGGESTIONS = [
-  "📝",
-  "📚",
-  "📖",
-  "📓",
-  "📔",
-  "📒",
-  "📑",
-  "🔖",
-  "📌",
-  "📍",
-  "📎",
-  "📐",
-  "✏️",
-  "📏",
-  "🖊️",
-  "🖋️",
-  "✒️",
-  "🖌️",
-  "🖍️",
-  "📝",
-  "✏️",
-  "🔍",
-  "🔎",
-  "💡",
-  "💭",
-  "💬",
-  "🗣️",
-  "👥",
-  "👤",
-  "🧠",
-  "🎯",
-  "🎨",
-];
+interface NotebookWithSourceCount extends Notebook {
+  sourceCount: number;
+}
 
 interface NotebookCardProps {
-  notebook: NoteBootWithSourceCount;
+  notebook: NotebookWithSourceCount;
 }
 
 export function NotebookCard({ notebook }: NotebookCardProps) {
   const [isRenameOpen, setIsRenameOpen] = useState(false);
-  const [newTitle, setNewTitle] = useState(notebook.title);
-  const [newEmoji, setNewEmoji] = useState(notebook.emoji);
-  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const [notebookToDelete, setNotebookToDelete] = useState<Notebook | null>(
     null
   );
-
-  const handleRename = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-
-    try {
-      const { error } = await updateNotebook({
-        id: notebook.id,
-        title: newTitle,
-        emoji: newEmoji,
-      });
-      if (error) throw new Error(error);
-
-      setIsRenameOpen(false);
-      router.refresh();
-    } catch (error) {
-      console.error("Failed to rename notebook:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const handleDeleteNotebook = async () => {
     if (!notebookToDelete) return;
@@ -120,6 +55,7 @@ export function NotebookCard({ notebook }: NotebookCardProps) {
       if (result.error) {
         console.error("Failed to delete notebook:", result.error);
       }
+      router.refresh();
     } catch (error) {
       console.error("Error deleting notebook:", error);
     } finally {
@@ -129,9 +65,9 @@ export function NotebookCard({ notebook }: NotebookCardProps) {
 
   return (
     <>
-      <Link href={`/notebook/${notebook.id}`} className="block">
-        <Card className="w-full hover:bg-accent/50 transition-colors">
-          <CardHeader className="flex flex-col space-y-0">
+      <Link href={`/notebook/${notebook.id}`} className="block h-full">
+        <Card className="w-full h-full hover:bg-accent/50 transition-colors">
+          <CardHeader className="flex flex-col space-y-0 h-[150px]">
             <div className="flex flex-row items-center justify-between w-full pb-4">
               <span className="text-5xl">{notebook.emoji}</span>
               <DropdownMenu>
@@ -166,7 +102,7 @@ export function NotebookCard({ notebook }: NotebookCardProps) {
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
-            <CardTitle className="text-xl font-bold line-clamp-2">
+            <CardTitle className="text-xl font-bold line-clamp-2 flex-grow">
               {notebook.title}
             </CardTitle>
           </CardHeader>
@@ -186,57 +122,11 @@ export function NotebookCard({ notebook }: NotebookCardProps) {
         </Card>
       </Link>
 
-      <Dialog open={isRenameOpen} onOpenChange={setIsRenameOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Edit Notebook</DialogTitle>
-          </DialogHeader>
-          <form onSubmit={handleRename} className="space-y-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Emoji</label>
-              <div className="grid grid-cols-8 gap-2 p-2 border rounded-md">
-                {EMOJI_SUGGESTIONS.map((suggestion) => (
-                  <button
-                    key={suggestion}
-                    type="button"
-                    onClick={() => setNewEmoji(suggestion)}
-                    className={`p-2 text-xl rounded-md hover:bg-accent ${
-                      newEmoji === suggestion ? "bg-accent" : ""
-                    }`}
-                  >
-                    {suggestion}
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div className="space-y-2">
-              <label htmlFor="title" className="text-sm font-medium">
-                Title
-              </label>
-              <Input
-                id="title"
-                placeholder="Enter notebook title"
-                value={newTitle}
-                onChange={(e) => setNewTitle(e.target.value)}
-                required
-              />
-            </div>
-            <div className="flex justify-end gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setIsRenameOpen(false)}
-                disabled={isLoading}
-              >
-                Cancel
-              </Button>
-              <Button type="submit" disabled={isLoading}>
-                {isLoading ? "Saving..." : "Save Changes"}
-              </Button>
-            </div>
-          </form>
-        </DialogContent>
-      </Dialog>
+      <NotebookDialog
+        notebook={notebook}
+        open={isRenameOpen}
+        onOpenChange={setIsRenameOpen}
+      />
 
       <AlertDialog
         open={!!notebookToDelete}
