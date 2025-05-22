@@ -1,6 +1,38 @@
-# LM Notes
+# LM Notes - NotebookLM Demonstration
 
-A modern note-taking application built with Next.js, Python FastAPI, and AI capabilities.
+A demonstration implementation of Google's NotebookLM concept, built with modern web technologies. This project showcases how to create an AI-powered note-taking application that can understand, analyze, and interact with your notes in a conversational way.
+
+![Application Screenshot 1](docs/screenshot_1.jpeg)
+![Application Screenshot 2](docs/screenshot_2.jpeg)
+
+## About
+
+This project is a demonstration of the NotebookLM concept, which combines document understanding with conversational AI. It allows users to:
+
+- Upload and manage documents
+- Have natural conversations about the content
+- Get AI-powered insights and summaries
+- Search through documents using semantic understanding
+
+## Key Technologies
+
+- **Frontend**:
+
+  - Next.js 15 with React 19
+  - [assistant-ui](https://github.com/assistant-ui/assistant-ui) for AI chat interface
+  - Tailwind CSS for styling
+  - Radix UI for accessible components
+
+- **AI & Processing**:
+
+  - OpenAI's GPT models for conversation and understanding
+  - LangChain for AI workflow orchestration
+  - Pinecone for vector storage and semantic search
+
+- **Backend**:
+  - FastAPI for the API layer
+  - PostgreSQL for data storage
+  - Drizzle ORM for database management
 
 ## Project Structure
 
@@ -11,10 +43,11 @@ The project is organized into two main components:
 
 ## Features
 
-- Modern, responsive UI built with Next.js and Tailwind CSS
-- AI-powered note-taking capabilities
-- Real-time updates and synchronization
-- Database integration with PostgreSQL
+- Modern, responsive UI with AI chat interface
+- Document upload and management
+- Real-time AI-powered conversations about your notes
+- Semantic search capabilities
+- Vector storage for efficient document retrieval
 - Docker support for easy deployment
 
 ## Prerequisites
@@ -26,7 +59,7 @@ The project is organized into two main components:
 
 ## Environment Variables
 
-### Frontend (.env in lmnotes directory)
+### Frontend (.env in web directory)
 
 ```env
 NEXT_PUBLIC_API_URL=http://localhost:8000
@@ -45,7 +78,13 @@ OPENAI_API_KEY=your_openai_api_key
 
 # Pinecone Configuration
 PINECONE_API_KEY=your_pinecone_api_key
+PINECONE_ENVIRONMENT=your_pinecone_environment
 PINECONE_INDEX_NAME=your_pinecone_index_name
+
+# Python Environment
+PYTHONPATH=/app
+PYTHONDONTWRITEBYTECODE=1
+PYTHONUNBUFFERED=1
 ```
 
 ## Getting Started
@@ -57,7 +96,7 @@ PINECONE_INDEX_NAME=your_pinecone_index_name
 1. Navigate to the frontend directory:
 
    ```bash
-   cd lmnotes
+   cd web
    ```
 
 2. Install dependencies:
@@ -67,7 +106,7 @@ PINECONE_INDEX_NAME=your_pinecone_index_name
    ```
 
 3. Set up environment variables:
-   Create a `.env` file in the `lmnotes` directory with the necessary environment variables.
+   Create a `.env` file in the `web` directory with the necessary environment variables.
 
 4. Start the development server:
    ```bash
@@ -104,7 +143,7 @@ PINECONE_INDEX_NAME=your_pinecone_index_name
 
 1. Create the required `.env` files:
 
-   - Create `lmnotes/.env` with frontend environment variables
+   - Create `web/.env` with frontend environment variables
    - Create `api/.env` with backend environment variables
 
 2. Build and start the containers:
@@ -147,6 +186,15 @@ pnpm db:push
 pnpm db:studio
 ```
 
+### Docker Development
+
+The project includes Docker configuration for both frontend and backend services. The setup includes:
+
+- Multi-stage builds for optimized images
+- Automatic database migrations on startup
+- Environment variable management
+- Health checks for service dependencies
+
 ## Tech Stack
 
 ### Frontend
@@ -188,6 +236,8 @@ To run the application, you'll need to obtain the following:
 
 ## Contributing
 
+This is a demonstration project, but contributions are welcome! If you'd like to contribute:
+
 1. Fork the repository
 2. Create your feature branch (`git checkout -b feature/amazing-feature`)
 3. Commit your changes (`git commit -m 'Add some amazing feature'`)
@@ -197,3 +247,9 @@ To run the application, you'll need to obtain the following:
 ## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
+
+## Acknowledgments
+
+- Inspired by Google's [NotebookLM](https://notebooklm.google.com)
+- Built with [assistant-ui](https://github.com/assistant-ui/assistant-ui)
+- Uses [LangChain](https://github.com/langchain-ai/langchain) for AI workflows
