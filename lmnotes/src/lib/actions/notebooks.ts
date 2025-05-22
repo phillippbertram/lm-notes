@@ -13,6 +13,7 @@ import {
   type DeleteNotebookInput,
 } from "@/lib/validations/notebook";
 import { z } from "zod";
+import { env } from "process";
 
 export async function getNotebooks() {
   try {
@@ -66,7 +67,23 @@ export async function createNotebook(input: CreateNotebookInput) {
 export async function deleteNotebook(input: DeleteNotebookInput) {
   try {
     const validatedData = deleteNotebookSchema.parse(input);
-    await db.delete(notebooks).where(eq(notebooks.id, validatedData.id));
+
+    await db.transaction(async (tx) => {
+      // sources are automatically removed when a notebook is deleted
+      await tx.delete(notebooks).where(eq(notebooks.id, validatedData.id));
+
+      // remove vector store
+      const res = await fetch(
+        `${env.AGENT_API_URL}/documents/notebooks/${validatedData.id}`,
+        {
+          method: "DELETE",
+        }
+      );
+      if (!res.ok) {
+        throw new Error(`Failed to delete vector store: ${res.statusText}`);
+      }
+    });
+
     return { success: true };
   } catch (error) {
     if (error instanceof z.ZodError) {

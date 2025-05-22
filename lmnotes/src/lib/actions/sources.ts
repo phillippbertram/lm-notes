@@ -3,24 +3,75 @@
 import { db } from "@/lib/db";
 import { sources } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
-import { Source, NewSource } from "@/lib/db/types";
-import {
-  createSourceSchema,
-  type CreateSourceInput,
-} from "@/lib/validations/source";
-import { z } from "zod";
+import { createSourceSchema } from "@/lib/validations/source";
+import { env } from "@/env";
+import { Source } from "../db/types";
 
-export async function createSource(input: CreateSourceInput) {
+export async function createSourceFile(formData: FormData): Promise<{
+  error?: string;
+  success: boolean;
+  source?: Source;
+}> {
+  const file = formData.get("file") as File;
+  if (!file) {
+    throw new Error("No file provided");
+  }
+
+  const notebookId = formData.get("notebookId") as string;
+  if (!notebookId) {
+    return { error: "No notebookId provided", success: false };
+  }
+
+  if (file.type !== "application/pdf" && file.type !== "text/plain") {
+    return { error: "Invalid file type", success: false };
+  }
+
+  // max 10 mb file size
+  if (file.size > 10 * 1024 * 1024) {
+    return { error: "File size too large", success: false };
+  }
+
+  // file as buffer
+  const arrayBuffer = await file.arrayBuffer();
+  const buffer = Buffer.from(arrayBuffer);
+
+  // create source in db
+  const validatedData = createSourceSchema.parse({
+    notebookId,
+    title: file.name,
+    type: file.type,
+  });
+
   try {
-    const validatedData = createSourceSchema.parse(input);
-    const [source] = await db.insert(sources).values(validatedData).returning();
-    return { data: source };
+    const source = await db.transaction(async (tx) => {
+      const [source] = await tx
+        .insert(sources)
+        .values(validatedData)
+        .returning();
+
+      // update vector store
+      const uploadFormData = new FormData();
+      uploadFormData.append(
+        "file",
+        new Blob([buffer], { type: file.type }),
+        file.name
+      );
+      uploadFormData.append("notebookId", notebookId);
+      uploadFormData.append("sourceId", source.id);
+
+      const res = await fetch(`${env.AGENT_API_URL}/upload`, {
+        method: "POST",
+        body: uploadFormData,
+      });
+      if (!res.ok) {
+        throw new Error(`Upload failed: ${res.statusText}`);
+      }
+      return source;
+    });
+    return { success: true, source };
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      return { error: error.errors[0].message };
-    }
-    console.error("Error creating source:", error);
-    return { error: "Failed to create source" };
+    console.error("Error uploading source:", error);
+    return { error: "Failed to upload source", success: false };
   }
 }
 
@@ -40,7 +91,15 @@ export async function getSources(notebookId: string) {
 
 export async function deleteSource(id: string) {
   try {
-    await db.delete(sources).where(eq(sources.id, id));
+    await db.transaction(async (tx) => {
+      await tx.delete(sources).where(eq(sources.id, id));
+      const res = await fetch(`${env.AGENT_API_URL}/documents/sources/${id}`, {
+        method: "DELETE",
+      });
+      if (!res.ok) {
+        throw new Error(`Failed to delete source: ${res.statusText}`);
+      }
+    });
     return { success: true };
   } catch (error) {
     console.error("Error deleting source:", error);

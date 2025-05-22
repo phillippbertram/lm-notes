@@ -82,7 +82,9 @@ If no relevant information is found, politely respond that you cannot answer bas
         
         Question: {input}
         
-        Please provide a detailed answer with references to the source documents.""")
+        Please provide a detailed answer with references to the source documents. 
+        Try to format the answer in a way that is easy to understand and as markdown.
+        """)
     ])
     
     return (

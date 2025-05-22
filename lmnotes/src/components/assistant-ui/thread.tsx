@@ -73,11 +73,9 @@ const ThreadWelcome: FC = () => {
     <ThreadPrimitive.Empty>
       <div className="flex w-full max-w-[var(--thread-max-width)] flex-grow flex-col">
         <div className="flex w-full flex-grow flex-col items-center justify-center">
-          <p className="mt-4 font-medium">
-            How can I help you today?
-          </p>
+          <p className="mt-4 font-medium">How can I help you today?</p>
         </div>
-        <ThreadWelcomeSuggestions />
+        {/* <ThreadWelcomeSuggestions /> */}
       </div>
     </ThreadPrimitive.Empty>
   );
@@ -248,7 +246,10 @@ const BranchPicker: FC<BranchPickerPrimitive.Root.Props> = ({
   return (
     <BranchPickerPrimitive.Root
       hideWhenSingleBranch
-      className={cn("text-muted-foreground inline-flex items-center text-xs", className)}
+      className={cn(
+        "text-muted-foreground inline-flex items-center text-xs",
+        className
+      )}
       {...rest}
     >
       <BranchPickerPrimitive.Previous asChild>

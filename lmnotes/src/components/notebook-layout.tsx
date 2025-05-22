@@ -11,7 +11,11 @@ import { useState, useRef, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { Notebook, Source } from "@/lib/db/types";
 import { AddSourceDialog } from "@/components/add-source-dialog";
-import { createSource, getSources, deleteSource } from "@/lib/actions/sources";
+import {
+  createSourceFile,
+  getSources,
+  deleteSource,
+} from "@/lib/actions/sources";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -55,12 +59,10 @@ export function NotebookLayout({ notebook }: NotebookLayoutProps) {
 
   const handleAddSource = async (file: File) => {
     try {
-      // const content = await file.text();
-      const { data, error } = await createSource({
-        notebookId: notebook.id,
-        title: file.name,
-        type: file.type === "application/pdf" ? "pdf" : "txt",
-      });
+      const formData = new FormData();
+      formData.append("notebookId", notebook.id);
+      formData.append("file", file);
+      const { error } = await createSourceFile(formData);
 
       if (error) {
         console.error(error);
@@ -189,7 +191,7 @@ export function NotebookLayout({ notebook }: NotebookLayoutProps) {
               <h1 className="text-xl font-semibold">{notebook.title}</h1>
             </div>
 
-            <Chat sources={sources} />
+            <Chat notebook={notebook} sources={sources} />
           </div>
         </ResizablePanel>
       </ResizablePanelGroup>

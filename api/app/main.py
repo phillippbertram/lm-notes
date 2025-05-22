@@ -32,10 +32,11 @@ embeddings = OpenAIEmbeddings()
 
 
 # Dummy streaming generator (for /chat-stream)
-# async def dummy_token_stream(message: str):
-#     for word in message.split():
-#         await asyncio.sleep(0.2)
-#         yield word + " "
+async def dummy_token_stream(message: str):
+    for word in message.split():
+        await asyncio.sleep(0.2)
+        yield f"data: {word} \n\n".encode("utf-8")  # 🔁 wichtig: bytes, nicht str
+
 
 @app.post("/chat-stream")
 async def chat_stream(request: Request):
@@ -44,21 +45,41 @@ async def chat_stream(request: Request):
     notebookId = body.get("notebookId", "")
     print(f"input_text: {input_text}")
     print(f"notebookId: {notebookId}")
-    # async def event_stream():
-    #     async for token in dummy_token_stream(input_text):
-    #         yield f"data: {token}\n\n"
-
-    agent = create_rag_agent(notebookId)
     async def event_stream():
-        async for event in agent.astream_events(input_text):
-            kind = event["event"]
-            if kind == "on_chat_model_stream":
-                print(event['data']['chunk'].content, end="|", flush=True)
-                # Need to format as SSE data
-                yield f"data: {event['data']['chunk'].content}\n\n"
+        async for chunk in dummy_token_stream(input_text):
+            yield chunk
+
+    # agent = create_rag_agent(notebookId)
+    # async def event_stream():
+    #     async for event in agent.astream_events(input_text):
+    #         kind = event["event"]
+    #         if kind == "on_chat_model_stream":
+    #             #print(event['data']['chunk'].content, end="|", flush=True)
+    #             # Need to format as SSE data
+    #             yield f"data: {event['data']['chunk'].content}\n\n"
 
 
     return StreamingResponse(event_stream(), media_type="text/event-stream")
+
+@app.post("/chat")
+async def chat(request: Request):
+    body = await request.json()
+    messages = body.get("messages", [])
+    notebookId = body.get("notebookId", "")
+    
+    print(f"notebookId: {notebookId}")
+    print(f"messages: {messages}")
+
+    print(f"latest_message: {messages[-1]}")
+    latest_message = messages[-1].get("content")[-1].get("text")
+    print(f"latest_message: {latest_message}")
+
+    agent = create_rag_agent(notebookId)
+    response = agent.invoke(latest_message)
+
+    return {
+        "text": response
+    }
 
 
 # Basic PDF upload endpoint
@@ -129,7 +150,7 @@ async def upload_pdf(
     })
 
 
-@app.delete("/documents/notebook/{notebookId}")
+@app.delete("/documents/notebooks/{notebookId}")
 async def delete_all_documents_for_notebook(notebookId: str):
     try:
         print(f"Deleting all documents from notebook '{notebookId}' in index: {pinecone_index}")
@@ -158,6 +179,7 @@ async def delete_all_documents_for_notebook(notebookId: str):
             status_code=500,
             detail=f"Error deleting all documents: {str(e)}"
         )
+
 @app.delete("/documents")
 async def delete_all_documents():
     try:
@@ -185,7 +207,7 @@ async def delete_all_documents():
         )
 
 
-@app.delete("/documents/source/{sourceId}")
+@app.delete("/documents/sources/{sourceId}")
 async def delete_documents(sourceId: str):
     try:
         print(f"Deleting documents from source '{sourceId}' in index: {pinecone_index}")
