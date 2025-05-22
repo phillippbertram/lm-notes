@@ -1,36 +1,153 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# LM Notes
+
+A modern note-taking application that combines the power of AI with your personal knowledge base. Built with Next.js, TypeScript, and OpenAI.
+
+## Features
+
+- 📝 Create and manage notebooks
+- 📄 Add sources (PDF, TXT) to your notebooks
+- 🤖 Chat with an AI assistant about your sources
+- 🔍 Semantic search through your sources
+- 🎨 Modern, responsive UI
+- 🔒 Secure and private
+
+## Tech Stack
+
+- **Frontend**: Next.js 14, React, TypeScript
+- **UI**: Tailwind CSS, shadcn/ui
+- **Database**: PostgreSQL with Drizzle ORM
+- **AI**: OpenAI GPT-4
+- **Authentication**: NextAuth.js
+- **Vector Search**: Pinecone (coming soon)
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- Node.js 18+ and npm
+- PostgreSQL database
+- OpenAI API key
+
+### Environment Variables
+
+Create a `.env` file in the root directory:
+
+```env
+# Database
+DATABASE_URL="postgresql://user:password@localhost:5432/lmnotes"
+
+# OpenAI
+OPENAI_API_KEY="your-api-key"
+
+# NextAuth
+NEXTAUTH_SECRET="your-secret"
+NEXTAUTH_URL="http://localhost:3000"
+
+# Pinecone (coming soon)
+PINECONE_API_KEY="your-api-key"
+PINECONE_ENVIRONMENT="your-environment"
+PINECONE_INDEX="your-index"
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Installation
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1. Clone the repository:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+   ```bash
+   git clone https://github.com/yourusername/lmnotes.git
+   cd lmnotes
+   ```
 
-## Learn More
+2. Install dependencies:
 
-To learn more about Next.js, take a look at the following resources:
+   ```bash
+   npm install
+   ```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+3. Set up the database:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+   ```bash
+   npm run db:generate
+   npm run db:push
+   ```
 
-## Deploy on Vercel
+4. Start the development server:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+   ```bash
+   npm run dev
+   ```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+5. Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+## Project Structure
+
+```
+src/
+├── app/                 # Next.js app directory
+│   ├── api/            # API routes
+│   ├── notebook/       # Notebook pages
+│   └── (auth)/        # Authentication pages
+├── components/         # React components
+├── lib/               # Utility functions and configurations
+│   ├── actions/       # Server actions
+│   ├── db/           # Database schema and types
+│   └── validations/  # Zod validation schemas
+└── styles/           # Global styles
+```
+
+## Database Schema
+
+### Notebooks
+
+- `id`: UUID (primary key)
+- `title`: String
+- `createdAt`: Timestamp
+- `updatedAt`: Timestamp
+- `userId`: String (foreign key to users)
+
+### Sources
+
+- `id`: UUID (primary key)
+- `notebookId`: UUID (foreign key to notebooks)
+- `title`: String
+- `type`: String (pdf, txt)
+- `content`: Text
+- `createdAt`: Timestamp
+- `updatedAt`: Timestamp
+
+## Development
+
+### Available Scripts
+
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run start` - Start production server
+- `npm run lint` - Run ESLint
+- `npm run db:generate` - Generate database types
+- `npm run db:push` - Push schema changes to database
+
+### Adding New Features
+
+1. Create necessary database migrations
+2. Add server actions in `src/lib/actions`
+3. Create UI components in `src/components`
+4. Add validation schemas in `src/lib/validations`
+
+## Contributing
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Acknowledgments
+
+- [Next.js](https://nextjs.org/)
+- [OpenAI](https://openai.com/)
+- [shadcn/ui](https://ui.shadcn.com/)
+- [Drizzle ORM](https://orm.drizzle.team/)
