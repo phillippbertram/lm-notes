@@ -65,6 +65,9 @@ importers:
       drizzle-orm:
         specifier: ^0.43.1
         version: 0.43.1(@opentelemetry/api@1.9.0)(@types/pg@8.15.2)(pg@8.16.0)
+      drizzle-zod:
+        specifier: ^0.8.1
+        version: 0.8.1(drizzle-orm@0.43.1(@opentelemetry/api@1.9.0)(@types/pg@8.15.2)(pg@8.16.0))(zod@3.25.17)
       lucide-react:
         specifier: ^0.511.0
         version: 0.511.0(react@19.1.0)
@@ -1854,6 +1857,12 @@ packages:
         optional: true
       sqlite3:
         optional: true
+
+  drizzle-zod@0.8.1:
+    resolution: {integrity: sha512-k2/2cwBz3Vjb7CWPVCeMNajZpG43V7SqhNrZ8LsWJOz8TztQ5YtU2ifgnfnxqZXsxeHmdQnsl6eXm7GwDZnq/Q==}
+    peerDependencies:
+      drizzle-orm: '>=0.36.0'
+      zod: ^3.25.1
 
   dunder-proto@1.0.1:
     resolution: {integrity: sha512-KIN/nDJBQRcXw0MLVhZE9iQHmG68qAVIBg9CqmUYjmQIhgij9U5MFvrqkUL5FbtyyzZuOeOt0zdeRe4UY7ct+A==}
@@ -4837,6 +4846,11 @@ snapshots:
       '@opentelemetry/api': 1.9.0
       '@types/pg': 8.15.2
       pg: 8.16.0
+
+  drizzle-zod@0.8.1(drizzle-orm@0.43.1(@opentelemetry/api@1.9.0)(@types/pg@8.15.2)(pg@8.16.0))(zod@3.25.17):
+    dependencies:
+      drizzle-orm: 0.43.1(@opentelemetry/api@1.9.0)(@types/pg@8.15.2)(pg@8.16.0)
+      zod: 3.25.17
 
   dunder-proto@1.0.1:
     dependencies:

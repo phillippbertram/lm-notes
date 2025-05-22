@@ -3,25 +3,43 @@
 import { db } from "@/lib/db";
 import { notebooks } from "@/lib/db/schema";
 import { desc, eq } from "drizzle-orm";
-import { Notebook, NewNotebook } from "@/lib/db/types";
+import { Notebook } from "@/lib/db/types";
 import {
   createNotebookSchema,
   updateNotebookSchema,
-  deleteNotebookSchema,
   type CreateNotebookInput,
   type UpdateNotebookInput,
-  type DeleteNotebookInput,
 } from "@/lib/validations/notebook";
 import { z } from "zod";
-import { env } from "process";
+import { revalidatePath } from "next/cache";
 
-export async function getNotebooks() {
+export type NoteBootWithSourceCount = Notebook & {
+  sourceCount: number;
+};
+
+export async function getNotebooks(): Promise<{
+  data?: NoteBootWithSourceCount[];
+  error?: string | null;
+}> {
   try {
-    const data = await db
-      .select()
-      .from(notebooks)
-      .orderBy(desc(notebooks.createdAt));
-    return { data };
+    const data = await db.query.notebooks.findMany({
+      with: {
+        sources: {
+          // TODO: would be better to just "count" sources
+          columns: {
+            id: true,
+          },
+        },
+      },
+      orderBy: [desc(notebooks.createdAt)],
+    });
+
+    const notebooksWithSourceCount = data.map((notebook) => ({
+      ...notebook,
+      sourceCount: notebook.sources?.length ?? 0,
+    }));
+
+    return { data: notebooksWithSourceCount };
   } catch (error) {
     console.error("Error fetching notebooks:", error);
     return { error: "Failed to fetch notebooks" };
@@ -54,6 +72,7 @@ export async function createNotebook(input: CreateNotebookInput) {
       .insert(notebooks)
       .values(validatedData)
       .returning();
+    revalidatePath("/");
     return { data: notebook };
   } catch (error) {
     if (error instanceof z.ZodError) {
@@ -64,33 +83,16 @@ export async function createNotebook(input: CreateNotebookInput) {
   }
 }
 
-export async function deleteNotebook(input: DeleteNotebookInput) {
+export async function deleteNotebook(id: string) {
   try {
-    const validatedData = deleteNotebookSchema.parse(input);
-
-    await db.transaction(async (tx) => {
-      // sources are automatically removed when a notebook is deleted
-      await tx.delete(notebooks).where(eq(notebooks.id, validatedData.id));
-
-      // remove vector store
-      const res = await fetch(
-        `${env.AGENT_API_URL}/documents/notebooks/${validatedData.id}`,
-        {
-          method: "DELETE",
-        }
-      );
-      if (!res.ok) {
-        throw new Error(`Failed to delete vector store: ${res.statusText}`);
-      }
-    });
-
+    await db.delete(notebooks).where(eq(notebooks.id, id));
+    revalidatePath("/notebook");
     return { success: true };
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      return { error: error.errors[0].message };
-    }
     console.error("Error deleting notebook:", error);
-    return { error: "Failed to delete notebook" };
+    return {
+      error: "Failed to delete notebook",
+    };
   }
 }
 
@@ -99,7 +101,11 @@ export async function updateNotebook(input: UpdateNotebookInput) {
     const validatedData = updateNotebookSchema.parse(input);
     const [notebook] = await db
       .update(notebooks)
-      .set({ title: validatedData.title, updatedAt: new Date() })
+      .set({
+        title: validatedData.title,
+        emoji: validatedData.emoji,
+        updatedAt: new Date(),
+      })
       .where(eq(notebooks.id, validatedData.id))
       .returning();
     return { data: notebook };

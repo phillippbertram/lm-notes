@@ -1,8 +1,6 @@
-import { PlusIcon } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { NotebookCard } from "@/components/notebook-card";
 import { getNotebooks } from "@/lib/actions/notebooks";
-import { CreateNotebookDialog } from "@/components/create-notebook-dialog";
+import { NotebookForm } from "@/components/notebook-form";
 
 export default async function Home() {
   const { data: notebooks, error } = await getNotebooks();
@@ -19,12 +17,7 @@ export default async function Home() {
     <div className="container py-6 mx-auto">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-semibold">Notebooks</h1>
-        <CreateNotebookDialog>
-          <Button>
-            <PlusIcon className="h-4 w-4 mr-2" />
-            New Notebook
-          </Button>
-        </CreateNotebookDialog>
+        <NotebookForm />
       </div>
 
       {!notebooks || notebooks.length === 0 ? (
