@@ -55,7 +55,7 @@ export function NotebookLayout({ notebook }: NotebookLayoutProps) {
 
   useEffect(() => {
     loadSources();
-  }, [notebook.id, loadSources]);
+  }, [notebook.id]);
 
   const handleAddSource = async (file: File) => {
     try {
