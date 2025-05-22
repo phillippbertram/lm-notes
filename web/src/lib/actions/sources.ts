@@ -59,6 +59,7 @@ export async function createSourceFile(formData: FormData): Promise<{
       uploadFormData.append("notebookId", notebookId);
       uploadFormData.append("sourceId", source.id);
 
+      console.log(`<<< ${env.AGENT_API_URL}/upload`);
       const res = await fetch(`${env.AGENT_API_URL}/upload`, {
         method: "POST",
         body: uploadFormData,
