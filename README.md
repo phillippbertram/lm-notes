@@ -62,9 +62,14 @@ The project is organized into two main components:
 ### Frontend (.env in web directory)
 
 ```env
-NEXT_PUBLIC_API_URL=http://localhost:8000
-NODE_ENV=production
-NEXT_TELEMETRY_DISABLED=1
+# Database Configuration
+DATABASE_URL=postgresql://postgres:postgres@db:5432/lmnotes
+
+# API Configuration
+AGENT_API_URL=http://localhost:8000
+
+# Node Environment
+NODE_ENV=development
 ```
 
 ### Backend (.env in api directory)
@@ -78,13 +83,7 @@ OPENAI_API_KEY=your_openai_api_key
 
 # Pinecone Configuration
 PINECONE_API_KEY=your_pinecone_api_key
-PINECONE_ENVIRONMENT=your_pinecone_environment
 PINECONE_INDEX_NAME=your_pinecone_index_name
-
-# Python Environment
-PYTHONPATH=/app
-PYTHONDONTWRITEBYTECODE=1
-PYTHONUNBUFFERED=1
 ```
 
 ## Getting Started
