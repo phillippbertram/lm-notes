@@ -18,8 +18,6 @@ export const EMOJI_SUGGESTIONS = [
   "✒️",
   "🖌️",
   "🖍️",
-  "📝",
-  "✏️",
   "🔍",
   "🔎",
   "💡",

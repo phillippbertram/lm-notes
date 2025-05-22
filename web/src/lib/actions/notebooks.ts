@@ -42,7 +42,7 @@ export async function getNotebooks(): Promise<{
     return { data: notebooksWithSourceCount };
   } catch (error) {
     console.error("Error fetching notebooks:", error);
-    return { error: "Failed to fetch notebooks" };
+    return { error: "Failed to fetch notebooks: " + JSON.stringify(error) };
   }
 }
 

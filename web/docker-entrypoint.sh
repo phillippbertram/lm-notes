@@ -12,6 +12,6 @@ echo "Database is ready!"
 echo "Running database migrations..."
 pnpm db:push
 
-# Start the application
-echo "Starting Next.js application..."
-exec pnpm start 
+# Start the development server
+echo "Starting Next.js development server..."
+exec pnpm dev 

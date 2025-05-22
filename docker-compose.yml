@@ -1,14 +1,13 @@
-version: '3.8'
-
 services:
   frontend:
     build:
       context: ./web
       dockerfile: Dockerfile
     ports:
-      - "3000:3000"
-    env_file:
-      - ./web/.env
+      - "3000:3000"  
+    environment:
+      - DATABASE_URL=postgres://postgres:postgres@db:5432/lmnotes
+      - AGENT_API_URL=http://backend:8000
     depends_on:
       - backend
 

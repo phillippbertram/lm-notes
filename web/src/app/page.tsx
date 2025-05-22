@@ -9,6 +9,7 @@ export default async function Home() {
     return (
       <div className="flex h-[calc(100vh-4rem)] items-center justify-center">
         <p className="text-muted-foreground">Failed to load notebooks</p>
+        <p className="text-muted-foreground">{error}</p>
       </div>
     );
   }
